@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="icon.png">
+
+<style>
+  body {
+    margin: 0;
+    background: #fafafa;
+    color: #1e293b;
+    font-family: "Prompt", sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 1rem;
+  }
+
+  button {
+    border: none;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all .25s ease;
+    font-weight: 500;
+  }
+
+  .yes {
+    background: #fda4af;
+    color: #fff;
+  }
+
+  .yes:hover {
+    background: #fb7185;
+    transform: scale(1.05);
+  }
+
+  .no {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .no:hover {
+    background: #cbd5e1;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.96);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding-top: 40px;
+    gap: 16px;
+  }
+
+  /* กรอบวิดีโอแบบมินิมอล */
+  .video-frame {
+    width: 90%;
+    max-width: 480px;
+    padding: 0;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 20px;
+  }
+
+  .image-slide {
+    max-width: 85%;
+    max-height: 70vh;
+    border-radius: 20px;
+    display: none;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+
+  .dots {
+    display: none;
+    margin-top: 12px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    background: #cbd5e1;
+    border-radius: 50%;
+  }
+
+  .dot.active {
+    background: #ef4444;
+  }
+
+  .final {
+    display: none;
+    font-size: 1.6rem;
+    margin-top: 1rem;
+    color: #ef4444;
+    animation: fadeIn 1.5s ease forwards;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  @keyframes fadeIn {
+    from {opacity:0; transform:translateY(10px);}
+    to {opacity:1; transform:translateY(0);}
+  }
+
+  /* หัวใจลอย */
+  .hearts {
+    position: fixed;
+    pointer-events: none;
+    inset: 0;
+    overflow: hidden;
+    z-index: 99;
+  }
+
+  .heart {
+    position: absolute;
+    color: #fb7185;
+    font-size: 22px;
+    animation: fall 3s linear infinite;
+    opacity: 0.9;
+  }
+
+  @keyframes fall {
+    0% {transform: translateY(-10px) rotate(0deg); opacity:1;}
+    100% {transform: translateY(100vh) rotate(360deg); opacity:0;}
+  }
+
+  /* ปุ่มเล่นเพลง */
+  .music-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #fda4af;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    z-index: 999;
+  }
+
+  .music-btn:hover {
+    background: #fb7185;
+    transform: scale(1.1);
+  }
+
+</style>
+</head>
+<body>
+
+  <h1>เนยจะเป็นแฟนกับไลอ้อนไหม? 💖</h1>
+
+  <div class="buttons">
+    <button class="yes">ตกลง 💕</button>
+    <button class="no">กดไม่ได้ 😆</button>
+  </div>
+
+  <button class="music-btn" id="musicBtn">🎵</button>
+
+  <div class="overlay">
+    <img class="image-slide" id="imageSlide">
+    <div class="dots" id="dots"></div>
+
+    <div class="video-frame" id="videoFrame">
+      <video id="videoPlayer" playsinline muted preload="auto"></video>
+    </div>
+
+    <div class="final">เย้ๆๆๆๆ ไลอ้อนรักเนยน้าาาาา ❤️</div>
+  </div>
+
+  <div class="hearts"></div>
+
+  <audio id="bgm" src="music/love.mp3" loop></audio>
+
+<script>
+const yesBtn = document.querySelector('.yes');
+const noBtn = document.querySelector('.no');
+const overlay = document.querySelector('.overlay');
+const video = document.getElementById('videoPlayer');
+const videoFrame = document.getElementById('videoFrame');
+const final = document.querySelector('.final');
+const hearts = document.querySelector('.hearts');
+const imageSlide = document.getElementById('imageSlide');
+const dots = document.getElementById('dots');
+const bgm = document.getElementById('bgm');
+const musicBtn = document.getElementById('musicBtn');
+
+video.muted = true;
+video.volume = 0;
+video.setAttribute("muted", "");
+
+const videos = ["video/1.mp4"];
+const images = [
+  "images/1.jpg",
+  "images/2.jpg",
+  "images/3.jpg",
+  "images/4.jpg",
+  "images/5.jpg"
+];
+
+let currentVideo = 0;
+let currentImage = 0;
+
+// เล่นวิดีโอ
+function playVideo(i) {
+  video.src = videos[i];
+  video.play();
+}
+
+// วิดีโอจบ → ข้อความสุดท้าย
+video.onended = () => {
+  currentVideo++;
+  if (currentVideo < videos.length) {
+    playVideo(currentVideo);
+  } else {
+    finish();
+  }
+};
+
+// เริ่มสไลด์ภาพ
+function startImages() {
+  videoFrame.style.display = "none"; // ซ่อนวิดีโอก่อน
+
+  dots.innerHTML = "";
+  images.forEach(() => {
+    let dot = document.createElement('div');
+    dot.className = 'dot';
+    dots.appendChild(dot);
+  });
+
+  dots.style.display = "flex";
+  imageSlide.style.display = "block";
+
+  showImage(0);
+
+  let timer = setInterval(() => {
+    currentImage++;
+    if (currentImage < images.length) {
+      showImage(currentImage);
+    } else {
+      clearInterval(timer);
+      playVideoAfterImages(); // เล่นวิดีโอหลังจากรูปทั้งหมด
+    }
+  }, 2000);
+}
+
+function showImage(i) {
+  imageSlide.style.opacity = 0;
+  setTimeout(() => {
+    imageSlide.src = images[i];
+    imageSlide.style.opacity = 1;
+  }, 200);
+
+  document.querySelectorAll('.dot').forEach((d, idx) => {
+    d.classList.toggle('active', idx === i);
+  });
+}
+
+function playVideoAfterImages() {
+  imageSlide.style.display = "none";
+  dots.style.display = "none";
+
+  videoFrame.style.display = "flex";
+  playVideo(0);
+}
+
+// จบแล้ว → ข้อความ + หัวใจ
+function finish() {
+  videoFrame.style.display = "none";
+  final.style.display = "block";
+  startHearts();
+}
+
+yesBtn.addEventListener('click', () => {
+  overlay.style.display = "flex";
+  startImages(); // เริ่มจากรูปก่อน
+});
+
+musicBtn.addEventListener('click', () => {
+  bgm.play();
+  musicBtn.style.display = "none";
+});
+
+noBtn.addEventListener('click', () => {
+  alert('บอกแล้วว่ากดไม่ได้ 😆');
+});
+
+// หัวใจลอย
+function startHearts(){
+  setInterval(()=>{
+    const h=document.createElement('div');
+    h.className='heart';
+    h.textContent='❤️';
+    h.style.left=Math.random()*100+'%';
+    h.style.fontSize=16+Math.random()*20+'px';
+    h.style.animationDuration=2+Math.random()*3+'s';
+    hearts.appendChild(h);
+    setTimeout(()=>h.remove(),4000);
+  },200);
+}
+</script>
+
+</body>
+</html>
